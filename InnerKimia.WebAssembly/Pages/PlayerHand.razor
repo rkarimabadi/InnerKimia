@@ -1,0 +1,18 @@
+﻿@using InnerKimia.Application.DTOs
+<div class="player-hand" style="direction:rtl">
+    <h3>🃏 دست شما</h3>
+    <div class="hand-cards">
+        @foreach (var card in GameState.PlayerHand)
+        {
+            <GameCard Card="card" 
+                      IsSelected="card.Id == SelectedCardId"
+                      OnCardClicked="() => OnCardSelected.InvokeAsync(card.Id)" />
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public GameStateDto GameState { get; set; } = null!;
+    [Parameter] public Guid? SelectedCardId { get; set; }
+    [Parameter] public EventCallback<Guid> OnCardSelected { get; set; }
+}

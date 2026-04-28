@@ -1,0 +1,39 @@
+﻿@using InnerKimia.Application.DTOs
+<div class="board">
+    <div class="board-grid">
+        @for (int row = 0; row < 3; row++)
+        {
+            @for (int col = 0; col < 3; col++)
+            {
+                var r = row;
+                var c = col;
+                var key = $"{r},{c}";
+                var card = GameState?.Board.GetValueOrDefault(key);
+
+                <GameCell Card="card"
+                          Row="r"
+                          Col="c"
+                          CanPlace="SelectedCardId.HasValue && card == null"
+                          OnCellClick="HandleCellClick" />
+            }
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public GameStateDto? GameState { get; set; }
+    [Parameter] public Guid? SelectedCardId { get; set; }
+    [Parameter] public EventCallback<CellClickEventArgs> OnCellClicked { get; set; }
+
+    private async Task HandleCellClick(CellClickEventArgs args)
+    {
+        await OnCellClicked.InvokeAsync(args);
+        StateHasChanged(); // اجباری نیست ولی برای اطمینان
+    }
+    public class CellClickEventArgs
+    {
+        public int Row { get; set; }
+        public int Col { get; set; }
+    }
+}
+

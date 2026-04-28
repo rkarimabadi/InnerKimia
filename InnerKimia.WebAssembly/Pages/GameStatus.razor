@@ -1,0 +1,37 @@
+﻿@using InnerKimia.Application.DTOs
+
+<div class="game-status">
+    <div class="status-item">
+        <span class="status-icon">🃏</span>
+        <span>پشته: <strong>@GameState.DrawPileCount</strong></span>
+    </div>
+
+    <div class="status-item">
+        <span class="status-icon">🗑️</span>
+        <span>باطل: <strong>@GameState.DiscardPileCount</strong></span>
+    </div>
+
+    <div class="status-item">
+        <span class="status-icon">📊</span>
+        <span>پیشرفت: <strong>@ProgressPercentage%</strong></span>
+    </div>
+
+    <div class="status-item">
+        <span class="status-icon">📋</span>
+        <span>خانه‌های پر: <strong>@OccupiedCells</strong> از ۹</span>
+    </div>
+</div>
+
+@code {
+    [Parameter] public GameStateDto GameState { get; set; } = null!;
+
+    /// <summary>
+    /// محاسبه تعداد خانه‌های پر شده
+    /// </summary>
+    private int OccupiedCells => GameState.Board.Values.Count(c => c != null);
+
+    /// <summary>
+    /// محاسبه درصد پیشرفت
+    /// </summary>
+    private double ProgressPercentage => Math.Round((OccupiedCells / 9.0) * 100, 1);
+}
