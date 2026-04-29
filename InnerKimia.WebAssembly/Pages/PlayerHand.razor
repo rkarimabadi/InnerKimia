@@ -1,12 +1,22 @@
-﻿@using InnerKimia.Application.DTOs
+﻿﻿@using InnerKimia.Application.DTOs
+
 <div class="player-hand" style="direction:rtl">
     <h3>🃏 دست شما</h3>
+    @if (IsBurnMode)
+    {
+        <div class="burn-mode-hint" style="background:#ff9800; color:#fff; padding:5px 10px; border-radius:8px; margin-bottom:10px; font-size:0.85em;">
+            🔥 حالت سوزاندن: ۲ کارت برای حذف سنگ انتخاب کنید
+        </div>
+    }
     <div class="hand-cards">
         @foreach (var card in GameState.PlayerHand)
         {
-            <GameCard Card="card" 
+            var isSelectedForBurn = SelectedBurnedCardIds.Contains(card.Id);
+            <GameCard Card="card"
                       IsSelected="card.Id == SelectedCardId"
-                      OnCardClicked="() => OnCardSelected.InvokeAsync(card.Id)" />
+                      IsSelectedForBurn="isSelectedForBurn"
+                      IsBurnMode="IsBurnMode"
+                      OnCardClicked="() => OnCardClicked.InvokeAsync(card.Id)" />
         }
     </div>
 </div>
@@ -14,5 +24,7 @@
 @code {
     [Parameter] public GameStateDto GameState { get; set; } = null!;
     [Parameter] public Guid? SelectedCardId { get; set; }
-    [Parameter] public EventCallback<Guid> OnCardSelected { get; set; }
+    [Parameter] public List<Guid> SelectedBurnedCardIds { get; set; } = new();
+    [Parameter] public bool IsBurnMode { get; set; } = false;
+    [Parameter] public EventCallback<Guid> OnCardClicked { get; set; }
 }

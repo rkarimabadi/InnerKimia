@@ -1,6 +1,10 @@
 ﻿@using InnerKimia.Application.DTOs
 
 <div class="game-controls">
+    <button class="btn btn-info" @onclick="HandleOpenGuide">
+        📖 راهنمای بازی
+    </button>
+
     <button class="btn btn-success" @onclick="HandleNewGame">
         🎮 شروع بازی جدید
     </button>
@@ -17,6 +21,7 @@
     [Parameter] public GameStateDto? GameState { get; set; }
     [Parameter] public EventCallback OnNewGame { get; set; }
     [Parameter] public EventCallback OnClearData { get; set; }
+    [Parameter] public EventCallback OnOpenGuide { get; set; }
 
     private async Task HandleNewGame()
     {
@@ -26,5 +31,10 @@
     private async Task HandleClearData()
     {
         await OnClearData.InvokeAsync();
+    }
+
+    private async Task HandleOpenGuide()
+    {
+        await OnOpenGuide.InvokeAsync();
     }
 }

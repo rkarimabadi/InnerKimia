@@ -1,48 +1,25 @@
-﻿@using InnerKimia.Application.DTOs
-@if (HasStones)
+﻿﻿@using InnerKimia.Application.DTOs
+
+@if (StonedCards.Any())
 {
     <div class="stoned-panel" style="direction:rtl;">
         <h3>🌑 کارت‌های سنگ شده</h3>
+        <p class="stone-removal-hint" style="font-size:0.85em; color:#ccc; margin-bottom:10px;">
+            💡 برای حذف سنگ، ابتدا روی سنگ مورد نظر کلیک کنید، سپس ۲ کارت از دست خود را انتخاب کنید.
+        </p>
 
         @foreach (var stonedCard in StonedCards)
         {
-            <div class="stoned-card-item">
+            var isSelected = SelectedStoneId == stonedCard.Id;
+            <div class="stoned-card-item @(isSelected ? "selected-stone" : "")"
+                 @onclick="() => OnStoneClicked.InvokeAsync(stonedCard.Id)">
                 <div class="game-card card-stoned">
                     <span class="element-symbol">@stonedCard.ElementSymbol</span>
                     <span class="element-name">@CardDto.Elements[stonedCard.Element]</span>
                 </div>
-
-                @if (CanRemoveStone && SelectedBurnedCards.Count == 2)
+                @if (isSelected)
                 {
-                    <button class="btn btn-danger btn-sm"
-                    @onclick="() => HandleRemoveStone(stonedCard.Id)">
-                        🗑️ حذف سنگ
-                    </button>
-                }
-            </div>
-        }
-
-        @if (CanRemoveStone)
-        {
-            <div class="burn-select">
-                <p>🔥 ۲ کارت برای سوزاندن انتخاب کنید:</p>
-                <div class="burn-cards">
-                    @foreach (var card in GameState.PlayerHand)
-                    {
-                        var isSelected = SelectedBurnedCards.Contains(card.Id);
-                        <div class="burn-card @(isSelected ? "selected" : "")"
-                        @onclick="() => ToggleBurnCard(card.Id)">
-                            <span class="element-symbol">@card.ElementSymbol</span>
-                            <span class="element-name">@CardDto.Elements[card.Element]</span>
-                        </div>
-                    }
-                </div>
-                @if (SelectedBurnedCards.Count > 0)
-                {
-                    <button class="btn btn-warning btn-sm" style="margin-top:5px; width: 93%; margin:10px auto 0 auto; display: block;"
-                    @onclick="ClearBurnSelection">
-                        لغو انتخاب
-                    </button>
+                    <span class="selected-indicator">✓ انتخاب شده</span>
                 }
             </div>
         }
@@ -51,68 +28,11 @@
 
 @code {
     [Parameter] public GameStateDto GameState { get; set; } = null!;
-    [Parameter] public EventCallback<RemoveStoneEventArgs> OnRemoveStone { get; set; }
+    [Parameter] public Guid? SelectedStoneId { get; set; }
+    [Parameter] public EventCallback<Guid> OnStoneClicked { get; set; }
 
-    private List<Guid> SelectedBurnedCards = new();
-
-    /// <summary>
-    /// کارت‌های سنگ شده روی صفحه
-    /// </summary>
     private List<CardDto> StonedCards => GameState.Board.Values
         .Where(c => c != null && c.IsStoned)
         .Select(c => c!)
         .ToList();
-
-    /// <summary>
-    /// آیا سنگی روی صفحه وجود دارد؟
-    /// </summary>
-    private bool HasStones => StonedCards.Count > 0;
-
-    /// <summary>
-    /// آیا بازیکن می‌تواند سنگ حذف کند؟ (سنگ وجود دارد + حداقل ۲ کارت در دست)
-    /// </summary>
-    private bool CanRemoveStone => HasStones && GameState.PlayerHand.Count >= 2;
-
-    // ==================== متدها ====================
-
-    private void ToggleBurnCard(Guid cardId)
-    {
-        if (SelectedBurnedCards.Contains(cardId))
-        {
-            SelectedBurnedCards.Remove(cardId);
-        }
-        else if (SelectedBurnedCards.Count < 2)
-        {
-            SelectedBurnedCards.Add(cardId);
-        }
-    }
-
-    private void ClearBurnSelection()
-    {
-        SelectedBurnedCards.Clear();
-    }
-
-    private async Task HandleRemoveStone(Guid stonedCardId)
-    {
-        var temp = new RemoveStoneEventArgs
-            {
-                StonedCardId = stonedCardId,
-                BurnedCardIds = new List<Guid>(SelectedBurnedCards)
-
-            };
-        if (SelectedBurnedCards.Count == 2)
-        {
-            await OnRemoveStone.InvokeAsync(temp);
-            SelectedBurnedCards.Clear();
-        }
-    }
-
-    /// <summary>
-    /// کلاس آرگومان برای EventCallback
-    /// </summary>
-    public class RemoveStoneEventArgs
-    {
-        public Guid StonedCardId { get; set; }
-        public List<Guid> BurnedCardIds { get; set; } = new();
-    }
 }

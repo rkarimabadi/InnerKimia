@@ -1,4 +1,6 @@
-﻿@using InnerKimia.Application.DTOs
+﻿﻿@using InnerKimia.Application.DTOs
+@using static InnerKimia.WebAssembly.Pages.GameBoard
+
 <div class="board">
     <div class="board-grid">
         @for (int row = 0; row < 3; row++)
@@ -9,12 +11,16 @@
                 var c = col;
                 var key = $"{r},{c}";
                 var card = GameState?.Board.GetValueOrDefault(key);
+                var isSelectedForStoneRemoval = SelectedStoneForRemoval?.Row == r && SelectedStoneForRemoval?.Column == c;
 
                 <GameCell Card="card"
                           Row="r"
                           Col="c"
                           CanPlace="SelectedCardId.HasValue && card == null"
-                          OnCellClick="HandleCellClick" />
+                          IsSelectedForStoneRemoval="isSelectedForStoneRemoval"
+                          IsStoneRemovalMode="IsStoneRemovalMode"
+                          OnCellClick="HandleCellClick"
+                          OnStoneSelected="HandleStoneSelected" />
             }
         }
     </div>
@@ -23,17 +29,31 @@
 @code {
     [Parameter] public GameStateDto? GameState { get; set; }
     [Parameter] public Guid? SelectedCardId { get; set; }
+    [Parameter] public PositionDto? SelectedStoneForRemoval { get; set; }
+    [Parameter] public bool IsStoneRemovalMode { get; set; } = false;
     [Parameter] public EventCallback<CellClickEventArgs> OnCellClicked { get; set; }
+    [Parameter] public EventCallback<StoneSelectedEventArgs> OnStoneSelected { get; set; }
 
     private async Task HandleCellClick(CellClickEventArgs args)
     {
         await OnCellClicked.InvokeAsync(args);
-        StateHasChanged(); // اجباری نیست ولی برای اطمینان
     }
+
+    private async Task HandleStoneSelected(StoneSelectedEventArgs args)
+    {
+        await OnStoneSelected.InvokeAsync(args);
+    }
+
     public class CellClickEventArgs
     {
         public int Row { get; set; }
         public int Col { get; set; }
     }
-}
 
+    public class StoneSelectedEventArgs
+    {
+        public int Row { get; set; }
+        public int Col { get; set; }
+        public Guid StonedCardId { get; set; }
+    }
+}

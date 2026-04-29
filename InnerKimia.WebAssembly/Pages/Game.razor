@@ -1,14 +1,14 @@
 ﻿@page "/"
 @using InnerKimia.Application.DTOs
 @using InnerKimia.Application.Interfaces
-@using static InnerKimia.WebAssembly.Pages.StonedCardsPanel
 @using static InnerKimia.WebAssembly.Pages.GameBoard
+@using static InnerKimia.WebAssembly.Pages.StonedCardsPanel
 
 @inject IGameService GameService
 
 <div class="game-container">
-    <h1 class="game-title">🔬 کیمیای درون 🧪</h1>
-    
+    <h1 class="game-title">✨ الِمنیا | ELEMENYA ✨</h1>
+
     @if (IsLoading)
     {
         <div class="loading">در حال بارگذاری...</div>
@@ -25,38 +25,73 @@
     else
     {
         <GameStatus GameState="GameState" />
-        
+
         <div class="game-area">
             <div class="board-section">
-                <GameBoard GameState="GameState" 
+                <GameBoard GameState="GameState"
                            SelectedCardId="SelectedCardId"
-                           OnCellClicked="HandleCellClick" />
-                <GameControls GameState="GameState" 
-                       OnNewGame="StartNewGame"
-                       OnClearData="ClearSavedData" />
+                           SelectedStoneForRemoval="SelectedStoneForRemoval"
+                           IsStoneRemovalMode="IsStoneRemovalMode"
+                           OnCellClicked="HandleCellClick"
+                           OnStoneSelected="HandleStoneSelected" />
+                <GameControls GameState="GameState"
+                              OnNewGame="StartNewGame"
+                              OnClearData="ClearSavedData"
+                              OnOpenGuide="OpenGuide" />
             </div>
-            
-            <div class="side-panel">
-                <PlayerHand GameState="GameState" 
-                            SelectedCardId="SelectedCardId"
-                            OnCardSelected="HandleCardSelected" />
 
-                <StonedCardsPanel GameState="GameState" 
-                                  OnRemoveStone="HandleRemoveStone" />
-                
+            <div class="side-panel">
+                <PlayerHand GameState="GameState"
+                            SelectedCardId="SelectedCardId"
+                            SelectedBurnedCardIds="SelectedBurnedCardIds"
+                            IsBurnMode="IsStoneRemovalMode"
+                            OnCardClicked="HandleCardClick" />
+
+                @*                 <StonedCardsPanel GameState="GameState"
+                                  SelectedStoneId="SelectedStoneId"
+                                  OnStoneClicked="HandleStoneClickFromPanel" /> *@
+
             </div>
         </div>
-        
+
+        @if (ShowStoneRemovalConfirm)
+        {
+            <div class="stone-removal-confirm">
+                <div class="confirm-dialog">
+                    <p>🔥 آیا مطمئن هستید می‌خواهید این سنگ را با سوزاندن ۲ کارت حذف کنید؟</p>
+                    <div class="confirm-buttons">
+                        <button class="btn btn-danger" @onclick="ConfirmRemoveStone">✓ تأیید</button>
+                        <button class="btn btn-secondary" @onclick="CancelStoneRemoval">✗ انصراف</button>
+                    </div>
+                </div>
+            </div>
+        }
+
         <GameMessages Messages="Messages" />
     }
 </div>
-
+<!-- مودال راهنمای بازی -->
+<GameGuide IsOpen="@IsGuideOpen" OnClose="@(() => IsGuideOpen = false)" />
 @code {
     private GameStateDto? GameState;
     private Guid? SelectedCardId;
     private List<string> Messages = new();
     private bool IsLoading = true;
 
+    // متغیرهای جدید برای فرآیند حذف سنگ
+    private Guid? SelectedStoneId;
+    private PositionDto? SelectedStoneForRemoval;
+    private List<Guid> SelectedBurnedCardIds = new();
+    private bool ShowStoneRemovalConfirm = false;
+    private Guid PendingStoneIdForRemoval;
+    private bool IsStoneRemovalMode = false;
+    private bool IsGuideOpen = false;
+
+    private void OpenGuide()
+    {
+        IsGuideOpen = true;
+        StateHasChanged();
+    }
     protected override async Task OnInitializedAsync()
     {
         await LoadGameAsync();
@@ -84,6 +119,7 @@
         {
             GameState = await GameService.StartNewGameAsync();
             SelectedCardId = null;
+            ClearStoneRemovalState();
             Messages.Clear();
             AddMessage("🎯 بازی جدید شروع شد! اولین کارت را در مرکز قرار دهید.");
         }
@@ -110,8 +146,152 @@
         }
     }
 
+    // ==================== مدیریت کلیک روی کارت‌ها (هم برای بازی و هم برای سوزاندن) ====================
+
+    private void HandleCardClick(Guid cardId)
+    {
+        if (IsStoneRemovalMode)
+        {
+            // در حالت حذف سنگ هستیم
+            HandleCardSelectedForBurn(cardId);
+        }
+        else
+        {
+            // در حالت عادی بازی هستیم
+            HandleCardSelected(cardId);
+        }
+    }
+
+    // ==================== مدیریت حذف سنگ ====================
+
+    private void HandleStoneSelected(StoneSelectedEventArgs args)
+    {
+        // اگر در حالت انتخاب کارت برای بازی هستیم، آن را لغو می‌کنیم
+        if (SelectedCardId.HasValue)
+        {
+            SelectedCardId = null;
+            AddMessage("⚠️ انتخاب کارت برای بازی لغو شد.");
+        }
+
+        // اگر همان سنگ دوباره کلیک شد، انتخاب لغو می‌شود
+        if (SelectedStoneId == args.StonedCardId)
+        {
+            ClearStoneRemovalState();
+            AddMessage("انتخاب سنگ لغو شد.");
+        }
+        else
+        {
+            SelectedStoneId = args.StonedCardId;
+            SelectedStoneForRemoval = new PositionDto(args.Row, args.Col);
+            SelectedBurnedCardIds.Clear();
+            IsStoneRemovalMode = true; // فعال کردن حالت سوزاندن
+            var stonedCard = GameState?.Board.Values.FirstOrDefault(c => c?.Id == args.StonedCardId);
+            AddMessage($"🌑 سنگ {stonedCard?.ElementSymbol} انتخاب شد. حالا ۲ کارت از دست خود را برای سوزاندن انتخاب کنید.");
+        }
+        StateHasChanged();
+    }
+
+    private void HandleStoneClickFromPanel(Guid stonedCardId)
+    {
+        // پیدا کردن موقعیت سنگ
+        var stonedCardEntry = GameState?.Board.FirstOrDefault(kvp => kvp.Value?.Id == stonedCardId);
+        if (stonedCardEntry.HasValue && stonedCardEntry.Value.Value != null)
+        {
+            var position = stonedCardEntry.Value.Key.Split(',');
+            if (position.Length == 2)
+            {
+                HandleStoneSelected(new StoneSelectedEventArgs
+                    {
+                        Row = int.Parse(position[0]),
+                        Col = int.Parse(position[1]),
+                        StonedCardId = stonedCardId
+                    });
+            }
+        }
+    }
+
+    private void HandleCardSelectedForBurn(Guid cardId)
+    {
+        if (!SelectedStoneId.HasValue)
+        {
+            AddMessage("⚠️ خطا: سنگ انتخاب شده نامعتبر است. لطفاً دوباره سنگ را انتخاب کنید.");
+            ClearStoneRemovalState();
+            return;
+        }
+
+        if (SelectedBurnedCardIds.Contains(cardId))
+        {
+            SelectedBurnedCardIds.Remove(cardId);
+            var card = GameState?.PlayerHand.FirstOrDefault(c => c.Id == cardId);
+            AddMessage($"❌ کارت {card?.ElementSymbol} از لیست سوزاندن حذف شد ({SelectedBurnedCardIds.Count}/2).");
+        }
+        else if (SelectedBurnedCardIds.Count < 2)
+        {
+            SelectedBurnedCardIds.Add(cardId);
+            var card = GameState?.PlayerHand.FirstOrDefault(c => c.Id == cardId);
+            AddMessage($"🔥 کارت {card?.ElementSymbol} به لیست سوزاندن اضافه شد ({SelectedBurnedCardIds.Count}/2).");
+        }
+        else
+        {
+            AddMessage("⚠️ قبلاً ۲ کارت انتخاب کرده‌اید. ابتدا عملیات را تأیید یا لغو کنید.");
+            return;
+        }
+
+        // اگر ۲ کارت انتخاب شد، دیالوگ تأیید نمایش داده شود
+        if (SelectedBurnedCardIds.Count == 2)
+        {
+            PendingStoneIdForRemoval = SelectedStoneId.Value;
+            ShowStoneRemovalConfirm = true;
+        }
+
+        StateHasChanged();
+    }
+
+    private async Task ConfirmRemoveStone()
+    {
+        ShowStoneRemovalConfirm = false;
+
+        try
+        {
+            var result = await GameService.RemoveStoneAsync(PendingStoneIdForRemoval, SelectedBurnedCardIds);
+            GameState = result;
+            AddMessage($"🗑️ سنگ با موفقیت حذف شد و {SelectedBurnedCardIds.Count} کارت سوزانده شد.");
+            ClearStoneRemovalState();
+        }
+        catch (Exception ex)
+        {
+            AddMessage($"❌ خطا در حذف سنگ: {ex.Message}");
+            ClearStoneRemovalState();
+        }
+    }
+
+    private void CancelStoneRemoval()
+    {
+        ShowStoneRemovalConfirm = false;
+        ClearStoneRemovalState();
+        AddMessage("عملیات حذف سنگ لغو شد.");
+    }
+
+    private void ClearStoneRemovalState()
+    {
+        SelectedStoneId = null;
+        SelectedStoneForRemoval = null;
+        SelectedBurnedCardIds.Clear();
+        PendingStoneIdForRemoval = Guid.Empty;
+        IsStoneRemovalMode = false;
+    }
+
+    // ==================== ادامه متدهای قبلی ====================
+
     private async Task HandleCellClick(CellClickEventArgs param)
     {
+        // اگر در حالت حذف سنگ هستیم، ابتدا آن را لغو می‌کنیم
+        if (IsStoneRemovalMode)
+        {
+            ClearStoneRemovalState();
+            AddMessage("حالت حذف سنگ لغو شد. حالا می‌توانید کارت بگذارید.");
+        }
+
         if (!SelectedCardId.HasValue)
         {
             AddMessage("⚠️ ابتدا یک کارت از دست خود انتخاب کنید.");
@@ -121,7 +301,7 @@
         try
         {
             var result = await GameService.PlaceCardAsync(
-                SelectedCardId.Value, 
+                SelectedCardId.Value,
                 new PositionDto(param.Row, param.Col));
 
             if (result.IsSuccess && result.GameState != null)
@@ -158,24 +338,12 @@
         }
     }
 
-    private async Task HandleRemoveStone(RemoveStoneEventArgs? param)
-    {
-        try
-        {
-            GameState = await GameService.RemoveStoneAsync(param.StonedCardId, param.BurnedCardIds);
-            AddMessage("🗑️ سنگ حذف شد.");
-        }
-        catch (Exception ex)
-        {
-            AddMessage($"❌ خطا: {ex.Message}");
-        }
-    }
-
     private async Task ClearSavedData()
     {
         await GameService.StartNewGameAsync();
         GameState = null;
         SelectedCardId = null;
+        ClearStoneRemovalState();
         Messages.Clear();
         AddMessage("🧹 همه داده‌ها پاک شد.");
     }

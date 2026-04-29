@@ -1,7 +1,7 @@
 ﻿/* wwwroot/css/game.css */
 
 .game-container {
-    max-width: 800px;
+    max-width: 390px;
     margin: 0 auto;
     padding: 20px;
 }
@@ -10,16 +10,24 @@
     margin-top: 10px;
     display: flex;
     justify-content: center;
+    gap: 5px;
 }
-
+.game-controls button {
+    font-size: x-small;
+    width: 100%;
+    margin: 0;
+    white-space:nowrap;
+}
 .game-title {
     text-align: center;
     color: #333;
+    font-size: x-large;
 }
 
 .game-area {
     display: flex;
     gap: 20px;
+    flex-flow:column;
 }
 
 .board-section {
@@ -166,15 +174,16 @@
 
 .game-status {
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
     gap: 20px;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
 }
 
 .status-item {
     background: #f5f5f5;
-    padding: 10px 20px;
+    padding: 5px 10px;
     border-radius: 8px;
+    font-size:small;
 }
 
 .stoned-panel {
@@ -276,3 +285,364 @@
     padding: 5px 10px;
     font-size: 0.8em;
 }
+
+/* استایل برای سنگ انتخاب شده */
+.cell-stoned.stone-selected {
+    background: #ff9800;
+    border-color: #ff5722;
+    box-shadow: 0 0 0 3px #ff9800;
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(255, 152, 0, 0.7);
+    }
+
+    70% {
+        box-shadow: 0 0 0 5px rgba(255, 152, 0, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(255, 152, 0, 0);
+    }
+}
+
+/* استایل برای کارت‌های انتخاب شده برای سوزاندن */
+.game-card.card-burn-selected {
+    border-color: #ff4444;
+    background: #ffebee;
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(255, 68, 68, 0.4);
+}
+
+/* استایل برای پنل سنگ‌ها */
+.stoned-card-item.selected-stone {
+    background: rgba(255, 152, 0, 0.3);
+    border-radius: 8px;
+    padding: 5px;
+    margin: -5px -5px 5px -5px;
+}
+
+.selected-indicator {
+    font-size: 0.7em;
+    color: #ff9800;
+    display: inline-block;
+    margin-left: 5px;
+}
+
+/* دیالوگ تأیید حذف سنگ */
+.stone-removal-confirm {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.confirm-dialog {
+    background: white;
+    padding: 25px 35px;
+    border-radius: 16px;
+    text-align: center;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    direction: rtl;
+}
+
+    .confirm-dialog p {
+        font-size: 1.1em;
+        margin-bottom: 20px;
+        color: #333;
+    }
+
+.confirm-buttons {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+}
+
+    .confirm-buttons .btn {
+        min-width: 100px;
+    }
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+}
+
+    .btn-secondary:hover {
+        background: #5a6268;
+    }
+/* ========== مودال راهنمای بازی ========== */
+
+.guide-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+    .guide-modal.open {
+        opacity: 1;
+        visibility: visible;
+    }
+
+.guide-modal-content {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    border-radius: 24px;
+    max-width: 550px;
+    width: 90%;
+    max-height: 85vh;
+    overflow-y: auto;
+    color: #eee;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1);
+    animation: modalSlideIn 0.3s ease;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(30px) scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.guide-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 24px 24px 0 0;
+}
+
+    .guide-header h2 {
+        margin: 0;
+        font-size: 1.6rem;
+        background: linear-gradient(135deg, #ffd89b, #c7e9fb);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+    }
+
+.guide-close-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+    .guide-close-btn:hover {
+        background: rgba(255, 255, 255, 0.2);
+        transform: scale(1.05);
+    }
+
+.guide-body {
+    padding: 20px 24px;
+    direction: rtl;
+}
+
+.guide-section {
+    margin-bottom: 24px;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 16px;
+    border-radius: 16px;
+}
+
+    .guide-section h3 {
+        margin: 0 0 12px 0;
+        font-size: 1.2rem;
+        color: #ffd89b;
+    }
+
+/* عناصر */
+.guide-elements {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.guide-element {
+    padding: 8px 16px;
+    border-radius: 40px;
+    font-weight: bold;
+}
+
+    .guide-element.fire {
+        background: #ff6b6b;
+        color: #fff;
+    }
+
+    .guide-element.water {
+        background: #4dabf7;
+        color: #fff;
+    }
+
+    .guide-element.earth {
+        background: #69db7e;
+        color: #2b2b2b;
+    }
+
+    .guide-element.wind {
+        background: #a5d8ff;
+        color: #2b2b2b;
+    }
+
+/* روابط */
+.guide-relations {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.relation-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.relation-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    min-width: 70px;
+    text-align: center;
+}
+
+    .relation-badge.same {
+        background: #2ecc71;
+        color: #fff;
+    }
+
+    .relation-badge.opposite {
+        background: #e74c3c;
+        color: #fff;
+    }
+
+    .relation-badge.friendly {
+        background: #f39c12;
+        color: #fff;
+    }
+
+    .relation-badge.neutral {
+        background: #95a5a6;
+        color: #fff;
+    }
+
+/* مراحل */
+.guide-steps {
+    margin: 0;
+    padding-right: 20px;
+}
+
+    .guide-steps li {
+        margin-bottom: 10px;
+        line-height: 1.5;
+    }
+
+/* برد و باخت */
+.win-lose {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.win-box, .lose-box {
+    flex: 1;
+    padding: 12px;
+    border-radius: 12px;
+    text-align: center;
+}
+
+.win-box {
+    background: rgba(46, 204, 113, 0.2);
+    border: 1px solid #2ecc71;
+}
+
+.lose-box {
+    background: rgba(231, 76, 60, 0.2);
+    border: 1px solid #e74c3c;
+}
+
+.win-icon, .lose-icon {
+    font-size: 1.5rem;
+    display: block;
+    margin-bottom: 6px;
+}
+
+/* نکات */
+.guide-tips {
+    background: rgba(255, 216, 155, 0.1);
+    border-right: 3px solid #ffd89b;
+}
+
+    .guide-tips ul {
+        margin: 0;
+        padding-right: 20px;
+    }
+
+    .guide-tips li {
+        margin-bottom: 6px;
+    }
+
+/* فوتر */
+.guide-footer {
+    padding: 16px 24px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    text-align: center;
+}
+
+/* اسکرول‌بار */
+.guide-modal-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.guide-modal-content::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+}
+
+.guide-modal-content::-webkit-scrollbar-thumb {
+    background: rgba(255, 216, 155, 0.5);
+    border-radius: 10px;
+}
+
+.btn-info {
+    background: #17a2b8;
+    color: white;
+}
+
+    .btn-info:hover {
+        background: #138496;
+    }

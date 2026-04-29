@@ -1,0 +1,119 @@
+﻿<div class="guide-modal @(IsOpen ? "open" : "")" @onclick="CloseModalIfBackground">
+    <div class="guide-modal-content" @onclick:stopPropagation="true">
+        <div class="guide-header">
+            <h2>🧪 راهنمای بازی المنیا</h2>
+            <button class="guide-close-btn" @onclick="CloseModal">✕</button>
+        </div>
+
+        <div class="guide-body">
+            <!-- هدف بازی -->
+            <div class="guide-section">
+                <h3>🎯 هدف بازی</h3>
+                <p>تمام <strong>۹ خانهٔ صفحه</strong> را با کارت‌های عنصری پر کنید، بدون اینکه هیچ کارت سنگ‌شد‌ه‌ای روی صفحه باقی بماند.</p>
+            </div>
+
+            <!-- عناصر -->
+            <div class="guide-section">
+                <h3>🔥 ۴ عنصر اصلی</h3>
+                <div class="guide-elements">
+                    <div class="guide-element fire">🔥 آتش</div>
+                    <div class="guide-element water">💧 آب</div>
+                    <div class="guide-element earth">🌍 خاک</div>
+                    <div class="guide-element wind">💨 باد</div>
+                </div>
+            </div>
+
+            <!-- روابط عناصر -->
+            <div class="guide-section">
+                <h3>⚡ روابط عناصر</h3>
+                <div class="guide-relations">
+                    <div class="relation-item">
+                        <span class="relation-badge same">🟢 همشکل</span>
+                        <span>→ هر دو کارت <strong>سنگ می‌شوند</strong></span>
+                    </div>
+                    <div class="relation-item">
+                        <span class="relation-badge opposite">🔴 متضاد</span>
+                        <span>(🔥↔💧 و 🌍↔💨) → هر دو <strong>سنگ می‌شوند</strong></span>
+                    </div>
+                    <div class="relation-item">
+                        <span class="relation-badge friendly">🟡 دوست</span>
+                        <span>(🔥↔💨 و 💧↔🌍) → <strong>هیچ اتفاقی نمی‌افتد</strong></span>
+                    </div>
+                    <div class="relation-item">
+                        <span class="relation-badge neutral">⚪ خنثی</span>
+                        <span>سایر ترکیبات → اگر <strong>دو خنثی پشت‌سر هم</strong> قرار بگیرند، هر سه سنگ می‌شوند</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- نحوه بازی -->
+            <div class="guide-section">
+                <h3>🎮 نحوه بازی</h3>
+                <ol class="guide-steps">
+                    <li>🃏 یک کارت از <strong>دست خود</strong> انتخاب کنید</li>
+                    <li>📍 روی یک خانهٔ <strong>خالی مجاور</strong> کارت‌های دیگر کلیک کنید</li>
+                    <li>💥 اگر کارت با همسایه‌اش رابطهٔ <strong>همشکل یا متضاد</strong> داشته باشد، هر دو <strong>سنگ می‌شوند</strong></li>
+                    <li>🌑 برای حذف سنگ: ابتدا روی <strong>سنگ کلیک</strong> کنید، سپس <strong>۲ کارت از دست</strong> انتخاب کنید و تأیید نمایید</li>
+                </ol>
+            </div>
+
+            <!-- حذف سنگ -->
+            <div class="guide-section">
+                <h3>🗑️ حذف سنگ</h3>
+                <p>برای حذف یک کارت سنگ‌شده از روی صفحه:</p>
+                <ul>
+                    <li>✅ روی کارت سنگ‌شده (🌑) کلیک کنید</li>
+                    <li>✅ ۲ کارت از دست خود را برای <strong>سوزاندن</strong> انتخاب کنید</li>
+                    <li>✅ عملیات را تأیید کنید</li>
+                    <li>📌 کارت سنگ حذف می‌شود و ۲ کارت انتخابی از دست شما خارج می‌شوند</li>
+                </ul>
+            </div>
+
+            <!-- شرط برد و باخت -->
+            <div class="guide-section">
+                <h3>🏆 برد و باخت</h3>
+                <div class="win-lose">
+                    <div class="win-box">
+                        <span class="win-icon">🏆</span>
+                        <strong>برد:</strong> ۹ خانه پر شده + بدون هیچ سنگ
+                    </div>
+                    <div class="lose-box">
+                        <span class="lose-icon">💀</span>
+                        <strong>باخت:</strong> پشته تمام شود + دست خالی + صفحه پر نشده
+                    </div>
+                </div>
+            </div>
+
+            <!-- نکات -->
+            <div class="guide-section guide-tips">
+                <h3>💡 نکات حرفه‌ای</h3>
+                <ul>
+                    <li>🔹 همیشه حداقل یک خانهٔ خالی مجاور کارت‌ها برای قرار دادن وجود داشته باشد</li>
+                    <li>🔹 از سنگ‌شدن کارت‌های باارزش جلوگیری کنید</li>
+                    <li>🔹 اگر ۲ کارت خنثی پشت‌سر هم باشند، هر سه سنگ می‌شوند</li>
+                    <li>🔹 می‌توانید قبل از سنگ‌شدن، کارت را در جای دیگری بگذارید</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="guide-footer">
+            <button class="btn btn-primary" @onclick="CloseModal">متوجه شدم 🎯</button>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public bool IsOpen { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    private async Task CloseModal()
+    {
+        IsOpen = false;
+        await OnClose.InvokeAsync();
+    }
+
+    private async Task CloseModalIfBackground()
+    {
+        await CloseModal();
+    }
+}

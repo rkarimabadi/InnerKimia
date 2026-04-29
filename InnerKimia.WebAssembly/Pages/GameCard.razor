@@ -1,4 +1,5 @@
-﻿@using InnerKimia.Application.DTOs
+﻿﻿@using InnerKimia.Application.DTOs
+
 <div class="game-card @GetCardClass()"
      @onclick="HandleClick"
      @onclick:stopPropagation="true">
@@ -17,10 +18,8 @@
 @code {
     [Parameter] public CardDto Card { get; set; } = null!;
     [Parameter] public bool IsSelected { get; set; }
-
-    /// <summary>
-    /// اگر فقط notify می‌کنیم (بدون پارامتر) → EventCallback
-    /// </summary>
+    [Parameter] public bool IsSelectedForBurn { get; set; }
+    [Parameter] public bool IsBurnMode { get; set; } = false; // حالت سوزاندن
     [Parameter] public EventCallback OnCardClicked { get; set; }
 
     private string GetCardClass()
@@ -29,6 +28,9 @@
 
         if (IsSelected)
             classes.Add("card-selected");
+
+        if (IsSelectedForBurn)
+            classes.Add("card-burn-selected");
 
         if (Card.IsStoned)
             classes.Add("card-stoned");

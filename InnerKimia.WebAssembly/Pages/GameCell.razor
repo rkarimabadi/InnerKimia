@@ -1,5 +1,6 @@
-﻿@using InnerKimia.Application.DTOs
+﻿﻿@using InnerKimia.Application.DTOs
 @using static InnerKimia.WebAssembly.Pages.GameBoard
+
 <div class="cell @GetCellClass()" @onclick="HandleClick">
     @if (Card != null)
     {
@@ -29,13 +30,20 @@
     [Parameter] public int Col { get; set; }
     [Parameter] public bool IsSelected { get; set; }
     [Parameter] public bool CanPlace { get; set; }
+    [Parameter] public bool IsSelectedForStoneRemoval { get; set; }
+    [Parameter] public bool IsStoneRemovalMode { get; set; } = false;
     [Parameter] public EventCallback<CellClickEventArgs> OnCellClick { get; set; }
+    [Parameter] public EventCallback<StoneSelectedEventArgs> OnStoneSelected { get; set; }
 
     private string GetCellClass()
     {
         if (Card != null)
         {
-            if (Card.IsStoned) return "cell-occupied cell-stoned";
+            if (Card.IsStoned)
+            {
+                if (IsSelectedForStoneRemoval) return "cell-occupied cell-stoned stone-selected";
+                return "cell-occupied cell-stoned";
+            }
             return $"cell-occupied cell-{Card.Element.ToLower()}";
         }
 
@@ -44,14 +52,23 @@
 
     private async Task HandleClick()
     {
-        var temp = new CellClickEventArgs
-            {
-                Row = Row,
-                Col = Col
-            };
-        if (CanPlace || Card == null)
+        if (Card?.IsStoned == true)
         {
-            await OnCellClick.InvokeAsync(temp);
+            // فقط اگر در حالت حذف سنگ نیستیم یا اگر هستیم باز هم می‌توانیم سنگ جدید انتخاب کنیم
+            await OnStoneSelected.InvokeAsync(new StoneSelectedEventArgs
+                {
+                    Row = Row,
+                    Col = Col,
+                    StonedCardId = Card.Id
+                });
         }
-    }    
+        else if (CanPlace || Card == null)
+        {
+            await OnCellClick.InvokeAsync(new CellClickEventArgs
+                {
+                    Row = Row,
+                    Col = Col
+                });
+        }
+    }
 }
